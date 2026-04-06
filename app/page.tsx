@@ -74,7 +74,7 @@ export default function Home() {
       <nav className={`fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-md ${isDark ? 'bg-zinc-950/90 border-zinc-800' : 'bg-white/90 border-zinc-200'}`}>
         <div className="max-w-4xl mx-auto px-6 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg overflow-hidden">
+            <div className="md:hidden w-8 h-8 rounded-lg overflow-hidden">
               <img src="/profile.jpg" alt={personalInfo.name} className="w-full h-full object-cover" />
             </div>
             <span className="font-medium">{personalInfo.name}</span>
