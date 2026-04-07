@@ -49,10 +49,23 @@ const skills = {
 
 const education = { school: "17 Agustus 1945 University", degree: "BA Information Technology", year: "2016-2023", gpa: "3.28" };
 
+function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  return (
+    <div 
+      className="animate-fade-in" 
+      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function Home() {
   const [theme, setTheme] = useState("dark");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const saved = localStorage.getItem("portfolio-theme");
     if (saved) setTheme(saved);
   }, []);
@@ -68,8 +81,32 @@ export default function Home() {
 
   const isDark = theme === "dark";
 
+  if (!mounted) {
+    return (
+      <div className={`min-h-screen ${isDark ? 'bg-zinc-950' : 'bg-zinc-50'}`} />
+    );
+  }
+
   return (
     <div className={`min-h-screen ${isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-zinc-50 text-zinc-900'} transition-colors`}>
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes typeReveal {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+        .typing-animation {
+          animation: typeReveal 0.5s ease-out forwards;
+          opacity: 0;
+        }
+      `}</style>
+
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-md ${isDark ? 'bg-zinc-950/90 border-zinc-800' : 'bg-white/90 border-zinc-200'}`}>
         <div className="max-w-4xl mx-auto px-6 py-3 flex justify-between items-center">
@@ -77,13 +114,13 @@ export default function Home() {
             <div className="md:hidden w-8 h-8 rounded-lg overflow-hidden">
               <img src="/profile.jpg" alt={personalInfo.name} className="w-full h-full object-cover" />
             </div>
-            <span className="font-medium">{personalInfo.name}</span>
+            <span className="md:hidden font-medium text-white">{personalInfo.name}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setTheme(isDark ? "light" : "dark")} className={`p-2 rounded-lg ${isDark ? 'bg-zinc-800 text-zinc-400 hover:text-white' : 'bg-zinc-100 text-zinc-600 hover:text-zinc-900'}`}>
+            <button onClick={() => setTheme(isDark ? "light" : "dark")} className={`p-2 rounded-lg transition-all duration-300 ${isDark ? 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700' : 'bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200'}`}>
               {isDark ? "🌙" : "☀️"}
             </button>
-            <a href="/cv.pdf" download className={`px-4 py-2 rounded-lg text-sm font-medium ${isDark ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-900 text-white'}`}>
+            <a href="/cv.pdf" download className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${isDark ? 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}>
               CV
             </a>
           </div>
@@ -92,129 +129,150 @@ export default function Home() {
 
       <main className="max-w-4xl mx-auto px-6 pt-20 pb-12">
         {/* Hero */}
-        <section className="mb-16">
-          <div className="flex flex-col md:flex-row gap-8 items-center">
-            <div className="flex-1">
-              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-4 ${isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                Available for work
+        <FadeIn>
+          <section className="mb-16">
+            <div className="flex flex-col md:flex-row gap-10 items-center">
+              <div className="flex-1">
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-4 ${isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Available for work
+                </div>
+                
+                <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+                  <span className={isDark ? 'text-white' : 'text-zinc-900'}>
+                    {personalInfo.name}
+                  </span>
+                </h1>
+                <p className={`text-2xl ${isDark ? 'text-white' : 'text-zinc-700'} mb-6`}>{personalInfo.title}</p>
+                
+                <div className="relative">
+                  <p className={`typing-animation ${isDark ? 'text-white' : 'text-zinc-700'} ${isDark ? 'border-l-2 border-zinc-600' : 'border-l-2 border-zinc-400'} pl-3`}>
+                    {personalInfo.summary}
+                  </p>
+                </div>
+                
+                <div className="flex flex-wrap gap-3 mt-8">
+                  <a href={`mailto:${personalInfo.email}`} className={`flex items-center gap-2 px-5 py-3 rounded-xl border text-sm font-medium transition-all duration-200 hover:scale-105 ${isDark ? 'border-zinc-700 hover:border-blue-500' : 'border-zinc-200 hover:border-blue-500'}`}>
+                    <Mail size={18} />
+                    Email
+                  </a>
+                  <a href={`https://wa.me/${personalInfo.whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-500 text-white text-sm font-medium transition-all duration-200 hover:scale-105 hover:bg-emerald-600">
+                    WhatsApp
+                  </a>
+                  <a href={`https://${personalInfo.linkedin}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#0077b5] text-white text-sm font-medium transition-all duration-200 hover:scale-105 hover:bg-[#005885]">
+                    LinkedIn
+                  </a>
+                </div>
+                
+                <div className={`flex items-center gap-2 mt-6 text-sm ${isDark ? 'text-white' : 'text-zinc-700'}`}>
+                  <MapPin size={16} className={isDark ? 'text-white' : 'text-zinc-700'} />
+                  <span>{personalInfo.location}</span>
+                </div>
               </div>
               
-              <h1 className="text-4xl font-bold mb-2">{personalInfo.name}</h1>
-              <p className="text-xl text-zinc-500 dark:text-zinc-400 mb-4">{personalInfo.title}</p>
-              <p className="text-zinc-600 dark:text-zinc-400 mb-6">{personalInfo.summary}</p>
-              
-              <div className="flex flex-wrap gap-3 mb-6">
-                <a href={`mailto:${personalInfo.email}`} className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm ${isDark ? 'border-zinc-700 hover:border-zinc-500' : 'border-zinc-200 hover:border-zinc-400'}`}>
-                  <Mail size={16} />
-                  Email
-                </a>
-                <a href={`https://wa.me/${personalInfo.whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm">
-                  WhatsApp
-                </a>
-                <a href={`https://${personalInfo.linkedin}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0077b5] text-white text-sm">
-                  LinkedIn
-                </a>
-              </div>
-              
-              <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-sm">
-                <MapPin size={16} />
-                <span>{personalInfo.location}</span>
+              <div className="hidden md:block w-48 h-48 rounded-3xl overflow-hidden border-2 border-zinc-700 shadow-xl">
+                <img src="/profile.jpg" alt={personalInfo.name} className="w-full h-full object-cover" />
               </div>
             </div>
-            
-            <div className="hidden md:block w-40 h-40 rounded-2xl overflow-hidden border-4 border-zinc-300 dark:border-zinc-700">
-              <img src="/profile.jpg" alt={personalInfo.name} className="w-full h-full object-cover" />
-            </div>
-          </div>
-        </section>
+          </section>
+        </FadeIn>
 
         {/* Skills */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6">Skills</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(skills).map(([category, items]) => (
-              <div key={category} className={`p-4 rounded-xl border ${isDark ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-                <h3 className="font-medium mb-3 text-zinc-500 dark:text-zinc-400 text-sm">{category}</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {items.map(item => (
-                    <span key={item} className={`px-2 py-1 rounded text-xs ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`}>{item}</span>
-                  ))}
+        <FadeIn delay={100}>
+          <section className="mb-16">
+            <h2 className="text-2xl font-semibold mb-6">Skills</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Object.entries(skills).map(([category, items], idx) => (
+                <div key={category} className={`p-4 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${isDark ? 'border-zinc-800 bg-zinc-900 hover:border-zinc-600' : 'border-zinc-200 bg-white hover:border-zinc-400'}`}>
+                  <h3 className="font-medium mb-3 text-zinc-500 dark:text-zinc-400 text-sm">{category}</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {items.map(item => (
+                      <span key={item} className={`px-2 py-1 rounded text-xs transition-colors duration-200 ${isDark ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-100 hover:bg-zinc-200'}`}>{item}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        </FadeIn>
 
         {/* Projects */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6">Projects ({projects.length})</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {projects.map((project, idx) => (
-              <a key={idx} href={project.link} target="_blank" rel="noopener noreferrer" className={`group p-5 rounded-xl border transition-colors ${isDark ? 'border-zinc-800 hover:border-zinc-600 bg-zinc-900' : 'border-zinc-200 hover:border-zinc-400 bg-white'}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium group-hover:text-blue-500 transition-colors">{project.name}</h3>
-                  <ExternalLink size={14} className="text-zinc-400" />
-                </div>
-                <p className={`text-sm mb-3 line-clamp-2 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>{project.description}</p>
-                <div className="flex flex-wrap gap-1">
-                  {project.tech.map(t => (
-                    <span key={t} className={`px-2 py-0.5 rounded text-xs ${isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-zinc-100 text-zinc-600'}`}>{t}</span>
-                  ))}
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
+        <FadeIn delay={200}>
+          <section className="mb-16">
+            <h2 className="text-2xl font-semibold mb-6">Projects ({projects.length})</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {projects.map((project, idx) => (
+                <a key={idx} href={project.link} target={project.link !== "#" ? "_blank" : undefined} rel={project.link !== "#" ? "noopener noreferrer" : undefined} className={`group p-5 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${isDark ? 'border-zinc-800 hover:border-zinc-600 bg-zinc-900' : 'border-zinc-200 hover:border-zinc-400 bg-white'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium group-hover:text-blue-500 transition-colors duration-200">{project.name}</h3>
+                    {project.link !== "#" && <ExternalLink size={14} className="text-zinc-400 group-hover:text-blue-500 transition-colors duration-200" />}
+                  </div>
+                  <p className={`text-sm mb-3 line-clamp-2 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>{project.description}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {project.tech.map(t => (
+                      <span key={t} className={`px-2 py-0.5 rounded text-xs transition-colors duration-200 ${isDark ? 'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700' : 'bg-zinc-100 text-zinc-600 group-hover:bg-zinc-200'}`}>{t}</span>
+                    ))}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        </FadeIn>
 
         {/* Experience */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6">Work Experience</h2>
-          <div className="space-y-3">
-            {experiences.map((exp) => (
-              <div key={exp.id} className={`p-5 rounded-xl border ${isDark ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-medium">{exp.position}</h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{exp.company}</p>
+        <FadeIn delay={300}>
+          <section className="mb-16">
+            <h2 className="text-2xl font-semibold mb-6">Work Experience</h2>
+            <div className="space-y-3">
+              {experiences.map((exp) => (
+                <div key={exp.id} className={`p-5 rounded-xl border transition-all duration-300 hover:scale-[1.01] ${isDark ? 'border-zinc-800 bg-zinc-900 hover:border-zinc-600' : 'border-zinc-200 bg-white hover:border-zinc-400'}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-medium">{exp.position}</h3>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">{exp.company}</p>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded transition-colors duration-200 ${isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-zinc-100 text-zinc-600'}`}>{exp.period}</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded ${isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-zinc-100 text-zinc-600'}`}>{exp.period}</span>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {exp.highlights.map(h => (
+                      <span key={h} className={`px-2 py-0.5 rounded text-xs transition-colors duration-200 ${isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-zinc-100 text-zinc-600'}`}>{h}</span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {exp.highlights.map(h => (
-                    <span key={h} className={`px-2 py-0.5 rounded text-xs ${isDark ? 'bg-zinc-800 text-zinc-400' : 'bg-zinc-100 text-zinc-600'}`}>{h}</span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        </FadeIn>
 
         {/* Education */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6">Education</h2>
-          <div className={`p-6 rounded-xl border ${isDark ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-                <GraduationCap size={24} className="text-zinc-600 dark:text-zinc-300" />
-              </div>
-              <div>
-                <h3 className="font-medium">{education.school}</h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">{education.degree}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{education.year} • GPA: {education.gpa}</p>
+        <FadeIn delay={400}>
+          <section className="mb-16">
+            <h2 className="text-2xl font-semibold mb-6">Education</h2>
+            <div className={`p-6 rounded-xl border transition-all duration-300 hover:scale-[1.01] ${isDark ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                  <GraduationCap size={24} className="text-zinc-600 dark:text-zinc-300" />
+                </div>
+                <div>
+                  <h3 className="font-medium">{education.school}</h3>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">{education.degree}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{education.year} • GPA: {education.gpa}</p>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </FadeIn>
 
         {/* Footer */}
-        <footer className="pt-8 border-t border-zinc-200 dark:border-zinc-800 text-center">
-          <a href="/cv.pdf" download className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium ${isDark ? 'bg-zinc-100 text-zinc-900' : 'bg-zinc-900 text-white'}`}>
-            <Download size={18} />
-            Download CV
-          </a>
-          <p className="mt-6 text-zinc-500 dark:text-zinc-400 text-sm">© 2024 {personalInfo.name}</p>
-        </footer>
+        <FadeIn delay={500}>
+          <footer className="pt-8 border-t border-zinc-200 dark:border-zinc-800 text-center">
+            <a href="/cv.pdf" download className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 ${isDark ? 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}>
+              <Download size={18} />
+              Download CV
+            </a>
+            <p className="mt-6 text-zinc-500 dark:text-zinc-400 text-sm">© 2024 {personalInfo.name}</p>
+          </footer>
+        </FadeIn>
       </main>
     </div>
   );
